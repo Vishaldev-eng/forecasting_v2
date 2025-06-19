@@ -1,11 +1,9 @@
 streamlit
 prophet
-pystan
+cmdstanpy
 statsmodels
 matplotlib
 pyodbc
 pandas
 plotly
 python-dotenv
-
-
