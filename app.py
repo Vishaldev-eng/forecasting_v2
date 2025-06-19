@@ -8,6 +8,8 @@ import matplotlib.dates as mdates
 import pyodbc
 import os
 import pandas as pd
+import plotly.graph_objects as go  # <-- Added
+import plotly.express as px         # <-- Added
 
 # Streamlit page config
 st.set_page_config(page_title='Forecasting', layout='centered')
