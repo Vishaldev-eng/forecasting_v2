@@ -8,8 +8,8 @@ import matplotlib.dates as mdates
 import pyodbc
 import os
 import pandas as pd
-import plotly.graph_objects as go  # <-- Added
-import plotly.express as px         # <-- Added
+import plotly.graph_objects as go  
+import plotly.express as px         
 
 # Streamlit page config
 st.set_page_config(page_title='Forecasting', layout='centered')
@@ -26,33 +26,45 @@ Easily connect to your Server, import data by writing SQL queries, and generate 
 5️⃣ Run the forecast and view interactive plots  
 """)
 
-# Input DB connection credentials
-server = st.text_input("Enter DB Server", value=os.getenv('DB_SERVER', ''))
-user = st.text_input("Enter DB User", value=os.getenv('DB_USER', ''))
-password = st.text_input("Enter DB Password", type="password", value=os.getenv('DB_PASSWORD', ''))
-initial_database = st.text_input("Enter Initial DB Name", value=os.getenv('DB_NAME', ''))
-
-# Session state to store connection
+# Initialize session state
 if "connection_established" not in st.session_state:
     st.session_state.connection_established = False
 if "server_connection" not in st.session_state:
     st.session_state.server_connection = None
+if "query_executed" not in st.session_state:
+    st.session_state.query_executed = False
 
-if st.button("Connect"):
-    try:
-        conn_str_initial = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={initial_database};UID={user};PWD={password}"
-        connection_initial = pyodbc.connect(conn_str_initial)
-        st.session_state.server_connection = connection_initial
-        st.session_state.connection_established = True
-        st.success("Connected successfully!")
-    except Exception as e:
-        st.error(f"Connection failed: {e}")
-        st.session_state.connection_established = False
+# Only show connection inputs if not connected
+if not st.session_state.connection_established:
 
-# After successful connection
+    # Input DB connection credentials
+    server = st.text_input("Enter DB Server", value=os.getenv('DB_SERVER', ''))
+    user = st.text_input("Enter DB User", value=os.getenv('DB_USER', ''))
+    password = st.text_input("Enter DB Password", type="password", value=os.getenv('DB_PASSWORD', ''))
+    initial_database = st.text_input("Enter Initial DB Name", value=os.getenv('DB_NAME', ''))
+
+    if st.button("Connect"):
+        try:
+            conn_str_initial = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={initial_database};UID={user};PWD={password}"
+            connection_initial = pyodbc.connect(conn_str_initial)
+            st.session_state.server_connection = connection_initial
+            st.session_state.connection_established = True
+            st.session_state.server = server
+            st.session_state.user = user
+            st.session_state.password = password
+            st.success("Connected successfully!")
+        except Exception as e:
+            st.error(f"Connection failed: {e}")
+
+# If connected, continue workflow
 if st.session_state.connection_established:
 
+    st.success("✅ Connected to database")
+
     connection_initial = st.session_state.server_connection
+    server = st.session_state.server
+    user = st.session_state.user
+    password = st.session_state.password
 
     try:
         db_query = "SELECT name FROM sys.databases"
@@ -78,7 +90,7 @@ if st.session_state.connection_established:
                     st.error(f"Failed to import data: {e}")
                     st.session_state.query_executed = False
 
-            if "query_executed" in st.session_state and st.session_state.query_executed:
+            if st.session_state.query_executed:
 
                 df = st.session_state['df']
                 st.subheader("Imported Data")
