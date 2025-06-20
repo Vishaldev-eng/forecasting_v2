@@ -38,12 +38,13 @@ if "query_executed" not in st.session_state:
 if not st.session_state.connection_established:
 
     # Input DB connection credentials
-    server = st.text_input("Enter DB Server", value=os.getenv('DB_SERVER', ''))
-    user = st.text_input("Enter DB User", value=os.getenv('DB_USER', ''))
-    password = st.text_input("Enter DB Password", type="password", value=os.getenv('DB_PASSWORD', ''))
-    initial_database = st.text_input("Enter Initial DB Name", value=os.getenv('DB_NAME', ''))
+    st.sidebar.write("Enter connection parameters")
+    server = st.sidebar.text_input("Enter DB Server", value='rhai.database.windows.net')
+    user = st.sidebar.text_input("Enter DB User", value='rhai')
+    password = st.sidebar.text_input("Enter DB Password", type="password")
+    initial_database = st.sidebar.text_input("Enter Initial DB Name", value='master')
 
-    if st.button("Connect"):
+    if st.sidebar.button("Connect"):
         try:
             conn_str_initial = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={initial_database};UID={user};PWD={password}"
             connection_initial = pyodbc.connect(conn_str_initial)
@@ -52,14 +53,14 @@ if not st.session_state.connection_established:
             st.session_state.server = server
             st.session_state.user = user
             st.session_state.password = password
-            st.success("Connected successfully!")
+            # st.success("Connected successfully!")
         except Exception as e:
             st.error(f"Connection failed: {e}")
 
 # If connected, continue workflow
 if st.session_state.connection_established:
 
-    st.success("✅ Connected to database")
+    # st.success("Connected to database")
 
     connection_initial = st.session_state.server_connection
     server = st.session_state.server
